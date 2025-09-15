@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Imposters</title>
+
+<!-- Icons + AOS Animation -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+<style>
+    :root {
+        --main-color: #006400;
+        --secondary-color: #FF0000;
+        --bg-color: #111;
+        --text-color: #eee;
+        --card-bg: rgba(20,20,20,0.8);
+        --glass-blur: 10px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-color); transition: all 0.4s ease-in-out; }
+
+    /* Navbar */
+    nav {
+        position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center;
+        background: rgba(0,0,0,0.6); backdrop-filter: blur(var(--glass-blur));
+        padding: 12px 20px; z-index: 1000;
+    }
+    nav .logo { font-size: 1.4rem; font-weight: bold; color: white; display: flex; align-items: center; gap: 10px; }
+    nav .logo img { width: 30px; height: 20px; border-radius: 3px; }
+    nav .themes { display: flex; gap: 8px; }
+    nav .themes button {
+        width: 35px; height: 35px; border-radius: 50%; border: none; cursor: pointer;
+        box-shadow: 0 0 8px rgba(0,0,0,0.3); transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden; display: flex; align-items: center; justify-content: center;
+    }
+    nav .themes button:hover { transform: scale(1.15); box-shadow: 0 0 12px var(--secondary-color); }
+    nav .themes button img { width: 100%; height: 100%; object-fit: cover; }
+
+    .theme-gaza img { border-radius: 50%; }
+    .theme-oceanic { background: linear-gradient(135deg, #005F73, #94D2BD); }
+    .theme-sunset  { background: linear-gradient(135deg, #F8961E, #F94144); }
+    .theme-midnight{ background: linear-gradient(135deg, #0A0F1F, #1E90FF); }
+
+    /* Hero */
+    .hero {
+        position: relative; height: 60vh; display: flex; flex-direction: column;
+        justify-content: center; align-items: center; background: var(--main-color);
+        color: white; text-align: center; overflow: hidden;
+    }
+    .circle {
+        position: absolute; border-radius: 50%;
+        background: var(--secondary-color);
+        opacity: 0.3; animation: float 6s infinite ease-in-out;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+    .circle:nth-child(1) { width: 100px; height: 100px; top: 10%; left: 15%; animation-delay: 0s; }
+    .circle:nth-child(2) { width: 150px; height: 150px; bottom: 15%; left: 25%; animation-delay: 2s; }
+    .circle:nth-child(3) { width: 120px; height: 120px; top: 30%; right: 20%; animation-delay: 4s; }
+    .circle:nth-child(4) { width: 200px; height: 200px; bottom: 10%; right: 10%; animation-delay: 6s; }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0) translateX(0); }
+        50%      { transform: translateY(-30px) translateX(20px); }
+    }
+
+    /* Buttons in Hero */
+    .hero .buttons { position: relative; z-index: 2; margin-top: 20px; }
+    .hero .buttons a {
+        text-decoration: none; background: white; color: var(--main-color);
+        padding: 12px 25px; margin: 8px; border-radius: 30px; font-weight: bold;
+        transition: all 0.3s ease; display: inline-block; animation: pulse 2s infinite;
+    }
+    .hero .buttons a:hover {
+        background: linear-gradient(135deg, var(--main-color), var(--secondary-color));
+        color: white; transform: translateY(-4px) scale(1.08);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    }
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.5); }
+        70% { box-shadow: 0 0 0 15px rgba(255,255,255,0); }
+        100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+    }
+
+    /* Container */
+    .container { width: 85%; margin: auto; padding: 50px 0; }
+    h2 { text-align: center; margin-bottom: 30px; color: var(--main-color); font-size: 2rem; }
+
+    /* Services */
+    .services {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0,1fr));
+        gap: 25px;
+    }
+    @media (max-width: 992px) {
+        .services { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+    @media (max-width: 600px) {
+        .services { grid-template-columns: 1fr; }
+    }
+
+    .service {
+        background: var(--card-bg); backdrop-filter: blur(var(--glass-blur));
+        padding: 25px; border-radius: 15px; text-align: center;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.05); transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .service:hover { transform: translateY(-8px) scale(1.05); box-shadow: 0 12px 30px rgba(0,0,0,0.15); }
+    .service i { font-size: 2.5rem; color: var(--secondary-color); margin-bottom: 15px;
+        transition: all 0.3s ease; animation: glow 2s infinite alternate; }
+    .service:hover i { transform: rotate(10deg) scale(1.2); text-shadow: 0 0 12px var(--secondary-color); }
+    @keyframes glow {
+        0% { text-shadow: 0 0 5px var(--secondary-color), 0 0 10px var(--secondary-color); }
+        100% { text-shadow: 0 0 20px var(--secondary-color), 0 0 40px var(--secondary-color); }
+    }
+
+    .service a {
+        display: inline-block; margin-top: 10px; padding: 10px 18px;
+        background: var(--secondary-color); color: white; border-radius: 25px;
+        text-decoration: none; font-weight: bold; transition: all 0.3s ease;
+    }
+    .service a:hover {
+        transform: scale(1.1) rotate(-2deg); box-shadow: 0 0 15px var(--secondary-color);
+        background: linear-gradient(135deg, var(--secondary-color), var(--main-color));
+    }
+
+    /* Footer */
+    footer { text-align: center; background: #111; color: white; padding: 15px; font-size: 0.9rem; }
+
+    /* Gaza Theme: dark with flag background */
+    body[data-theme="gaza"] .hero {
+        background:
+          linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
+          url("https://upload.wikimedia.org/wikipedia/commons/0/00/Flag_of_Palestine.svg") center/cover no-repeat;
+    }
+     body[data-theme="gaza"] .circle { display: none; }
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav>
+    <div class="logo">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/0/00/Flag_of_Palestine.svg" alt="Palestine Flag">
+        Imposters Web
+    </div>
+    <div class="themes">
+        <button class="theme-gaza" onclick="setTheme('gaza')">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/0/00/Flag_of_Palestine.svg" alt="Gaza Flag">
+        </button>
+        <button class="theme-oceanic" onclick="setTheme('oceanic')"></button>
+        <button class="theme-sunset" onclick="setTheme('sunset')"></button>
+        <button class="theme-midnight" onclick="setTheme('midnight')"></button>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+
+    <div class="buttons">
+        <a href="/about">About Us</a>
+        <a href="/portfolio">Portfolio</a>
+        <a href="/contact">Contact</a>
+    </div>
+</section>
+
+<!-- Services Section -->
+<div class="container" id="services">
+    <h2>What I Do</h2>
+    <div class="services">
+        <div class="service" data-aos="fade-up">
+            <i class="bi bi-code-slash"></i>
+            <h3>Cipher</h3>
+            <p>We gonna help you trasform text to keep it secret.</p>
+            <a href="/cipher">Cipher Text</a>
+        </div>
+        <div class="service" data-aos="fade-up" data-aos-delay="100">
+            <i class="bi bi-phone"></i>
+            <h3>Volume</h3>
+            <p>Adjust volume of files.</p>
+            <a href="{{ url_for('audio') }}">Adjust Now</a>
+        </div>
+
+         <div class="service" data-aos="fade-up" data-aos-delay="400">
+            <i class="bi bi-heart-fill"></i>
+            <h3>Gaza</h3>
+            <p>Raising awareness and showing solidarity with Gaza.</p>
+            <a href="/gaza">Learn More </a>
+        </div>
+        <div class="service" data-aos="fade-up" data-aos-delay="300">
+            <i class="bi bi-controller"></i>
+            <h3>Snake Game</h3>
+            <p>Play the classic snake — use arrow keys to collect points.</p>
+            <a href="{{ url_for('snake') }}">Play Snake</a>
+        </div>
+
+        <div class="service" data-aos="fade-up" data-aos-delay="500">
+            <i class="bi bi-joystick"></i>
+            <h3>Rat Game</h3>
+            <p>Aim carefully before you throw -- use click to collect points.</p>
+            <a href="{{ url_for('mouse') }}">Play  Rat</a>
+        </div>
+                <div class="service" data-aos="fade-up" data-aos-delay="400">
+            <i class="bi bi-heart"></i>
+            <h3>Comming Soon </h3>
+            <p>Please wait for upcoming updates</p>
+
+        </div>
+
+
+    </div>
+</div>
+
+<!-- Footer -->
+<footer>
+    <p>© 2025 Imposters  All Rights Reserved.</p>
+</footer>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+    function setTheme(theme) {
+        if (theme === 'gaza') {
+            document.documentElement.style.setProperty('--main-color', '#008000');
+            document.documentElement.style.setProperty('--secondary-color', '#E60026');
+            document.documentElement.style.setProperty('--bg-color', '#111');
+            document.documentElement.style.setProperty('--text-color', '#eee');
+            document.documentElement.style.setProperty('--card-bg', 'rgba(20,20,20,0.8)');
+        }
+        if (theme === 'oceanic') {
+            document.documentElement.style.setProperty('--main-color', '#005F73');
+            document.documentElement.style.setProperty('--secondary-color', '#94D2BD');
+            document.documentElement.style.setProperty('--bg-color', '#E9D8A6');
+            document.documentElement.style.setProperty('--text-color', '#001219');
+            document.documentElement.style.setProperty('--card-bg', 'rgba(255,255,255,0.7)');
+        }
+        if (theme === 'sunset') {
+            document.documentElement.style.setProperty('--main-color', '#F8961E');
+            document.documentElement.style.setProperty('--secondary-color', '#F94144');
+            document.documentElement.style.setProperty('--bg-color', '#FEC89A');
+            document.documentElement.style.setProperty('--text-color', '#2F2F2F');
+            document.documentElement.style.setProperty('--card-bg', 'rgba(255,255,255,0.7)');
+        }
+        if (theme === 'midnight') {
+            document.documentElement.style.setProperty('--main-color', '#1E90FF');
+            document.documentElement.style.setProperty('--secondary-color', '#00F5D4');
+            document.documentElement.style.setProperty('--bg-color', '#001219');
+            document.documentElement.style.setProperty('--text-color', '#E0F7FA');
+            document.documentElement.style.setProperty('--card-bg', 'rgba(10,15,31,0.6)');
+        }
+        document.body.setAttribute('data-theme', theme);
+        localStorage.setItem("theme", theme);
+    }
+
+    window.onload = () => {
+        const savedTheme = localStorage.getItem("theme") || 'gaza';
+        setTheme(savedTheme);
+    };
+
+    AOS.init({ duration: 800 });
+</script>
+
+</body>
+</html>
+

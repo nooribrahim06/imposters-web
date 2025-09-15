@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Personal Profile{% endblock %}</title>
+
+<!-- Icons + AOS Animation -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+<style>
+    .about-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 30px;
+}
+
+.about-box {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+  max-width: 320px;
+  background: var(--card-color);
+  color: var(--text-color);
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+
+  transition: flex 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.1); /* outer frame */
+}
+
+/* Inner subtle frame */
+.about-box::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  border-radius: 8px;
+  border: 1px dashed rgba(255,255,255,0.3);
+  pointer-events: none;
+}
+
+/* Hover: box grows + outer frame gets thicker */
+.about-box:hover {
+  flex: 1.3;
+  transform: scale(1.05);
+  box-shadow: 0 0 0 5px rgba(0,0,0,0.25);
+}
+
+/* Other boxes shrink a bit */
+.about-container:hover .about-box:not(:hover) {
+  flex: 0.9;
+  opacity: 0.85;
+}
+
+/* Heading above content */
+.about-box h3 {
+  margin-bottom: 15px;
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.about-box p {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.about-box a {
+  text-decoration: none;
+  color: var(--text-color);
+  transition: color 0.3s ease;
+}
+
+.about-box a:hover {
+    text-decoration: underline;
+    color: var(--text-color);
+}
+
+p {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+
+  /* Box styling */
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 15px auto;
+  max-width: 600px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+
+  /* Typography */
+  text-align: left;
+}
+
+/* Reusable box */
+/* Cipher Page Styling */
+.container {
+    width: 85%;
+    margin: auto;
+    padding: 40px 0;
+}
+
+/* Cipher Box */
+.box {
+    background: var(--card-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+    transition: all 0.3s ease;
+}
+.box:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+}
+
+.box h2 {
+    color: var(--main-color);
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+}
+
+/* Cipher Form */
+.cipher-box {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+}
+
+.cipher-box textarea,
+.cipher-box input {
+    padding: 12px 15px;
+    border-radius: 10px;
+    border: 2px solid var(--main-color);
+    outline: none;
+    resize: none;
+    font-size: 1rem;
+    background: rgba(255,255,255,0.05);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+.cipher-box textarea:focus,
+.cipher-box input:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 10px var(--secondary-color);
+}
+
+/* Button */
+.btn {
+    background: var(--secondary-color);
+    color: white;
+    font-weight: bold;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.btn:hover {
+    background: linear-gradient(135deg, var(--secondary-color), var(--main-color));
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 0 15px var(--secondary-color);
+}
+
+/* Result Box */
+.result-box {
+    background: var(--card-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    margin-top: 30px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.result-box h2 {
+    color: var(--main-color);
+    margin-bottom: 15px;
+}
+
+.result-box p {
+    font-size: 1.2rem;
+    color: var(--text-color);
+    word-wrap: break-word;
+}
+
+/* Fade Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+
+    :root {
+        --main-color: #006400;
+        --secondary-color: #FF0000;
+        --bg-color: #111;
+        --text-color: #eee;
+        --card-bg: rgba(20,20,20,0.8);
+        --glass-blur: 10px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-color); transition: all 0.4s ease-in-out; }
+
+    /* Navbar */
+    nav {
+        position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center;
+        background: rgba(0,0,0,0.6); backdrop-filter: blur(var(--glass-blur));
+        padding: 12px 20px; z-index: 1000;
+    }
+    nav .logo { font-size: 1.4rem; font-weight: bold; color: white; display: flex; align-items: center; gap: 10px; }
+    nav .logo img { width: 30px; height: 20px; border-radius: 3px; }
+    nav .themes { display: flex; gap: 8px; }
+    nav .themes button {
+        width: 35px; height: 35px; border-radius: 50%; border: none; cursor: pointer;
+        box-shadow: 0 0 8px rgba(0,0,0,0.3); transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden; display: flex; align-items: center; justify-content: center;
+    }
+    nav .themes button:hover { transform: scale(1.15); box-shadow: 0 0 12px var(--secondary-color); }
+    nav .themes button img { width: 100%; height: 100%; object-fit: cover; }
+
+    .theme-gaza img { border-radius: 50%; }
+    .theme-oceanic { background: linear-gradient(135deg, #005F73, #94D2BD); }
+    .theme-sunset  { background: linear-gradient(135deg, #F8961E, #F94144); }
+    .theme-midnight{ background: linear-gradient(135deg, #0A0F1F, #1E90FF); }
+
+    /* Hero */
+    .hero {
+        position: relative; height: 60vh; display: flex; flex-direction: column;
+        justify-content: center; align-items: center; background: var(--main-color);
+        color: white; text-align: center; overflow: hidden;
+    }
+    .circle {
+        position: absolute; border-radius: 50%;
+        background: var(--secondary-color);
+        opacity: 0.3; animation: float 6s infinite ease-in-out;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+    .circle:nth-child(1) { width: 100px; height: 100px; top: 10%; left: 15%; animation-delay: 0s; }
+    .circle:nth-child(2) { width: 150px; height: 150px; bottom: 15%; left: 25%; animation-delay: 2s; }
+    .circle:nth-child(3) { width: 120px; height: 120px; top: 30%; right: 20%; animation-delay: 4s; }
+    .circle:nth-child(4) { width: 200px; height: 200px; bottom: 10%; right: 10%; animation-delay: 6s; }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0) translateX(0); }
+        50%      { transform: translateY(-30px) translateX(20px); }
+    }
+
+    /* Buttons in Hero */
+    .hero .buttons { position: relative; z-index: 2; margin-top: 20px; }
+    .hero .buttons a {
+        text-decoration: none; background: white; color: var(--main-color);
+        padding: 12px 25px; margin: 8px; border-radius: 30px; font-weight: bold;
+        transition: all 0.3s ease; display: inline-block; animation: pulse 2s infinite;
+    }
+    .hero .buttons a:hover {
+        background: linear-gradient(135deg, var(--main-color), var(--secondary-color));
+        color: white; transform: translateY(-4px) scale(1.08);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    }
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.5); }
+        70% { box-shadow: 0 0 0 15px rgba(255,255,255,0); }
+        100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+    }
+
+    /* Container */
+    .container { width: 85%; margin: auto; padding: 50px 0; }
+    h2 { text-align: center; margin-bottom: 30px; color: var(--main-color); font-size: 2rem; }
+
+    /* Services */
+    .services {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0,1fr));
+        gap: 25px;
+    }
+    @media (max-width: 992px) {
+        .services { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+    @media (max-width: 600px) {
+        .services { grid-template-columns: 1fr; }
+    }
+
+    .service {
+        background: var(--card-bg); backdrop-filter: blur(var(--glass-blur));
+        padding: 25px; border-radius: 15px; text-align: center;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.05); transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .service:hover { transform: translateY(-8px) scale(1.05); box-shadow: 0 12px 30px rgba(0,0,0,0.15); }
+    .service i { font-size: 2.5rem; color: var(--secondary-color); margin-bottom: 15px;
+        transition: all 0.3s ease; animation: glow 2s infinite alternate; }
+    .service:hover i { transform: rotate(10deg) scale(1.2); text-shadow: 0 0 12px var(--secondary-color); }
+    @keyframes glow {
+        0% { text-shadow: 0 0 5px var(--secondary-color), 0 0 10px var(--secondary-color); }
+        100% { text-shadow: 0 0 20px var(--secondary-color), 0 0 40px var(--secondary-color); }
+    }
+
+    .service a {
+        display: inline-block; margin-top: 10px; padding: 10px 18px;
+        background: var(--secondary-color); color: white; border-radius: 25px;
+        text-decoration: none; font-weight: bold; transition: all 0.3s ease;
+    }
+    .service a:hover {
+        transform: scale(1.1) rotate(-2deg); box-shadow: 0 0 15px var(--secondary-color);
+        background: linear-gradient(135deg, var(--secondary-color), var(--main-color));
+    }
+
+    /* Footer */
+    footer { text-align: center; background: #111; color: white; padding: 15px; font-size: 0.9rem; }
+
+    /* Gaza Theme */
+    body[data-theme="gaza"] .hero {
+        background:
+          linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
+          url("https://upload.wikimedia.org/wikipedia/commons/0/00/Flag_of_Palestine.svg") center/cover no-repeat;
+    }
+    body[data-theme="gaza"] .circle { display: none; }
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav>
+    <div class="logo">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/0/00/Flag_of_Palestine.svg" alt="Palestine Flag">
+        Imposters' Profile
+    </div>
+    <div class="themes">
+        <button class="theme-gaza" onclick="setTheme('gaza')">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/0/00/Flag_of_Palestine.svg" alt="Gaza Flag">
+        </button>
+        <button class="theme-oceanic" onclick="setTheme('oceanic')"></button>
+        <button class="theme-sunset" onclick="setTheme('sunset')"></button>
+        <button class="theme-midnight" onclick="setTheme('midnight')"></button>
+    </div>
+</nav>
+
+<!-- Page Content -->
+{% block content %}{% endblock %}
+
+<!-- Footer -->
+<footer>
+    <p>© 2025 imposters All Rights Reserved.</p>
+</footer>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+    function setTheme(theme) {
+        if (theme === 'gaza') {
+            document.documentElement.style.setProperty('--main-color', '#008000');
+            document.documentElement.style.setProperty('--secondary-color', '#E60026');
+            document.documentElement.style.setProperty('--bg-color', '#111');
+            document.documentElement.style.setProperty('--text-color', '#eee');
+            document.documentElement.style.setProperty('--card-bg', 'rgba(20,20,20,0.8)');
+        }
+        if (theme === 'oceanic') {
+            document.documentElement.style.setProperty('--main-color', '#005F73');
+            document.documentElement.style.setProperty('--secondary-color', '#94D2BD');
+            document.documentElement.style.setProperty('--bg-color', '#E9D8A6');
+            document.documentElement.style.setProperty('--text-color', '#001219');
+            document.documentElement.style.setProperty('--card-bg', 'rgba(255,255,255,0.7)');
+        }
+        if (theme === 'sunset') {
+            document.documentElement.style.setProperty('--main-color', '#F8961E');
+            document.documentElement.style.setProperty('--secondary-color', '#F94144');
+            document.documentElement.style.setProperty('--bg-color', '#FEC89A');
+            document.documentElement.style.setProperty('--text-color', '#2F2F2F');
+            document.documentElement.style.setProperty('--card-bg', 'rgba(255,255,255,0.7)');
+        }
+        if (theme === 'midnight') {
+            document.documentElement.style.setProperty('--main-color', '#1E90FF');
+            document.documentElement.style.setProperty('--secondary-color', '#00F5D4');
+            document.documentElement.style.setProperty('--bg-color', '#001219');
+            document.documentElement.style.setProperty('--text-color', '#E0F7FA');
+            document.documentElement.style.setProperty('--card-bg', 'rgba(10,15,31,0.6)');
+        }
+        document.body.setAttribute('data-theme', theme);
+        localStorage.setItem("theme", theme);
+    }
+
+    window.onload = () => {
+        const savedTheme = localStorage.getItem("theme") || 'gaza';
+        setTheme(savedTheme);
+    };
+
+    AOS.init({ duration: 800 });
+</script>
+
+</body>
+</html>

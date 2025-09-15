@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>3D Login Page</title>
+
+  <!-- Google font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg-1:#061021;
+      --bg-2:#0f2740;
+      --accent:#6ee7b7;
+      --accent-2:#5ec2ff;
+    }
+    html,body{height:100%;margin:0;font-family:'Inter',sans-serif;}
+    body{
+      background: linear-gradient(180deg,var(--bg-1),var(--bg-2));
+      overflow:hidden;
+      color:#e6f0ff;
+    }
+    .wrap{
+      position:relative;
+      width:100%;
+      height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+    #bg-canvas{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      z-index:0;
+    }
+    .card{
+      position:relative;
+      z-index:2;
+      width:min(420px,92%);
+      padding:28px;
+      border-radius:18px;
+      background: rgba(255,255,255,0.06);
+      box-shadow:0 8px 40px rgba(3,7,18,0.6);
+      backdrop-filter: blur(10px);
+      display:grid;
+      gap:14px;
+      animation: fadeIn 1s ease forwards;
+    }
+    @keyframes fadeIn {
+      from {opacity:0; transform:scale(0.9);}
+      to {opacity:1; transform:scale(1);}
+    }
+    @keyframes slideIn {
+      from {opacity:0; transform:translateY(20px);}
+      to {opacity:1; transform:translateY(0);}
+    }
+    @keyframes pulse {
+      0% {transform: scale(1);}
+      50% {transform: scale(1.05);}
+      100% {transform: scale(1);}
+    }
+    @keyframes shake {
+      0%,100% {transform: translateX(0);}
+      25% {transform: translateX(-6px);}
+      75% {transform: translateX(6px);}
+    }
+    .brand{display:flex;align-items:center;gap:12px;}
+    .logo{
+      width:52px;height:52px;border-radius:12px;
+      background:linear-gradient(135deg,var(--accent),var(--accent-2));
+      display:flex;align-items:center;justify-content:center;
+      font-weight:700;color:#021023;font-size:16px;
+    }
+    .title{margin:0;font-size:18px;font-weight:700;}
+    .subtitle{margin:0;font-size:13px;color:rgba(230,240,255,0.7);}
+    form{display:grid;gap:12px;}
+    label{font-size:12px;color:rgba(230,240,255,0.85);margin-bottom:4px;}
+    .input{
+      width:100%;padding:12px 14px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.1);
+      background:rgba(255,255,255,0.04);
+      color:inherit;font-size:15px;
+      opacity:0;transform:translateY(15px);
+      animation: slideIn 0.6s forwards;
+    }
+    .input:nth-of-type(1){animation-delay:0.2s;}
+    .input:nth-of-type(2){animation-delay:0.4s;}
+    .btn{
+      margin-top:8px;
+      padding:13px 16px;
+      font-weight:700;
+      border-radius:12px;
+      border:none;
+      cursor:pointer;
+      font-size:15px;
+      background:linear-gradient(90deg,rgba(110,231,183,0.3),rgba(94,194,255,0.3));
+      color:#e6fbf0;
+      opacity:0;transform:translateY(15px);
+      animation: slideIn 0.6s forwards;
+      animation-delay:0.6s;
+      transition:all 0.3s ease;
+    }
+    .btn:hover{background:linear-gradient(90deg,rgba(110,231,183,0.5),rgba(94,194,255,0.5));}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="card" id="card">
+      <div class="brand">
+        <div class="logo">W</div>
+        <div>
+          <p class="title">Welcome</p>
+          <p class="subtitle">Login to continue</p>
+        </div>
+      </div>
+
+<form method="post" action="/">
+  <div>
+    <label for="firstName">First Name</label>
+    <input id="firstName" class="input" type="text" name="first_name" placeholder="Youssef" required />
+  </div>
+  <div>
+    <label for="lastName">Last Name</label>
+    <input id="lastName" class="input" type="text" name="last_name" placeholder="Abdallah" required />
+  </div>
+  <button type="submit" class="btn">Login</button>
+</form>
+
+    </div>
+  </div>
+
+  <!-- Three.js -->
+  <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+
+  <script>
+    const canvas = document.getElementById('bg-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 2000);
+    camera.position.set(0,0,60);
+
+    const light1 = new THREE.DirectionalLight(0xffffff,0.6);
+    light1.position.set(10,10,10);
+    scene.add(light1);
+    scene.add(new THREE.AmbientLight(0x88baf4,0.25));
+
+    const group = new THREE.Group();
+    scene.add(group);
+
+    const geom = new THREE.OctahedronGeometry(1.6,0);
+    const mat = new THREE.MeshStandardMaterial({color:0x5ec2ff,metalness:0.2,roughness:0.7,transparent:true,opacity:0.7});
+
+    for(let i=0;i<30;i++){
+      const m = new THREE.Mesh(geom, mat.clone());
+      m.position.set((Math.random()-0.5)*140,(Math.random()-0.5)*80,(Math.random()-0.5)*120);
+      m.rotation.set(Math.random()*2,Math.random()*2,Math.random()*2);
+      const s = 0.6+Math.random()*2;
+      m.scale.setScalar(s);
+      group.add(m);
+    }
+
+    // particles
+    const ptsGeometry = new THREE.BufferGeometry();
+    const ptsCount = 300;
+    const positions = new Float32Array(ptsCount*3);
+    for(let i=0;i<ptsCount;i++){
+      positions[i*3]=(Math.random()-0.5)*300;
+      positions[i*3+1]=(Math.random()-0.5)*120;
+      positions[i*3+2]=(Math.random()-0.5)*260;
+    }
+    ptsGeometry.setAttribute('position',new THREE.BufferAttribute(positions,3));
+    const ptsMat = new THREE.PointsMaterial({size:1.5,color:0xbfeeff,transparent:true,opacity:0.15});
+    const points = new THREE.Points(ptsGeometry,ptsMat);
+    scene.add(points);
+
+    // interaction
+    let targetX=0, targetY=0;
+    function updateTarget(nx,ny){
+      targetX = nx*12;
+      targetY = ny*8;
+    }
+    window.addEventListener('mousemove',(e)=>{
+      const nx = (e.clientX/window.innerWidth)*2-1;
+      const ny = (e.clientY/window.innerHeight)*2-1;
+      updateTarget(nx,ny);
+    });
+    window.addEventListener('touchmove',(e)=>{
+      if(e.touches.length>0){
+        const t = e.touches[0];
+        const nx = (t.clientX/window.innerWidth)*2-1;
+        const ny = (t.clientY/window.innerHeight)*2-1;
+        updateTarget(nx,ny);
+      }
+    },{passive:true});
+
+    window.addEventListener('resize',()=>{
+      renderer.setSize(window.innerWidth,window.innerHeight);
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+    });
+
+    function animate(){
+      requestAnimationFrame(animate);
+      group.rotation.y +=0.002;
+      group.rotation.x +=0.001;
+
+      camera.position.x += (targetX-camera.position.x)*0.02;
+      camera.position.y += (-targetY-camera.position.y)*0.02;
+      camera.lookAt(0,0,0);
+
+      points.rotation.y +=0.0005;
+      renderer.render(scene,camera);
+    }
+    animate()
+  </script>
+</body>
+</html>

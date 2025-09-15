@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Caesar Cipher</title>
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #000;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    /* Home icon */
+    .home-icon {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 26px;
+      color: #00e0ff;
+      transition: 0.3s;
+    }
+    .home-icon:hover {
+      color: #8a2be2;
+    }
+
+    .card {
+      backdrop-filter: blur(15px);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 40px;
+      width: 450px;
+      text-align: center;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 28px;
+      color: #00e0ff;
+      text-shadow: 0 0 8px #00e0ff80;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      font-size: 14px;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+      resize: none;
+    }
+
+    .key-container {
+      margin: 20px 0;
+      text-align: left;
+    }
+
+    .key-container label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #00e0ff;
+    }
+
+    .key-inputs {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 6px;
+      border-radius: 5px;
+      background: linear-gradient(90deg, #00e0ff, #8a2be2);
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid #00e0ff;
+      cursor: pointer;
+    }
+
+    input[type="number"] {
+      width: 60px;
+      padding: 6px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .mode-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin: 20px 0;
+    }
+
+    .mode-btn {
+      flex: 1;
+      margin: 0 5px;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.3s;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+
+    .mode-btn.active {
+      background: linear-gradient(45deg, #00e0ff, #8a2be2);
+      color: #fff;
+      box-shadow: 0 0 10px #00e0ff80;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      background: linear-gradient(45deg, #00e0ff, #8a2be2);
+      color: #fff;
+      box-shadow: 0 0 12px #00e0ff60;
+      transition: 0.3s;
+    }
+
+    .submit-btn:hover {
+      transform: scale(1.03);
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      border: none;
+      background: #00e0ff;
+      color: #000;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    .copy-btn:hover {
+      background: #8a2be2;
+      color: #fff;
+    }
+
+    .copied-msg {
+      position: absolute;
+      bottom: -25px;
+      right: 10px;
+      font-size: 12px;
+      color: #00e0ff;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+
+    .copied-msg.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <!-- Home icon -->
+  <a href="/home" class="home-icon"><i class="bi bi-house-fill"></i></a>
+
+  <div class="card">
+    <h1>Caesar Cipher</h1>
+    <form method="POST" action="/cipher">
+      <textarea name="plain_text" rows="3" placeholder="Enter your text..." required></textarea>
+
+      <div class="key-container">
+        <label for="key">Key</label>
+        <div class="key-inputs">
+          <input type="range" min="0" max="25" value="0" id="keyRange" required oninput="syncKey(this.value)">
+          <input type="number" min="0" max="25" value="0" name="key" id="keyInput" required oninput="syncKey(this.value)">
+        </div>
+      </div>
+
+      <div class="mode-buttons">
+        <button type="button" class="mode-btn active" onclick="setMode('encrypt', this)">Encrypt</button>
+        <button type="button" class="mode-btn" onclick="setMode('decrypt', this)">Decrypt</button>
+      </div>
+
+      <input type="hidden" name="mode" id="mode" value="encrypt">
+      <button type="submit" class="submit-btn">Run</button>
+    </form>
+
+    {% if result %}
+    <div class="result">
+      <button class="copy-btn" onclick="copyResult()">Copy</button>
+      <p id="output">{{ result }}</p>
+      <span id="copiedMsg" class="copied-msg">Copied!</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <script>
+    function setMode(value, btn) {
+      document.getElementById("mode").value = value;
+      document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+    }
+
+    function syncKey(value) {
+      value = Math.max(0, Math.min(25, value));
+      document.getElementById("keyRange").value = value;
+      document.getElementById("keyInput").value = value;
+    }
+
+    function copyResult() {
+      const text = document.getElementById("output").innerText;
+      navigator.clipboard.writeText(text);
+
+      const msg = document.getElementById("copiedMsg");
+      msg.classList.add("show");
+      setTimeout(() => msg.classList.remove("show"), 1200);
+    }
+  </script>
+</body>
+</html>

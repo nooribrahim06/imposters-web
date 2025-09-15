@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gaza — دعم وتضامن</title>
+  <meta name="description" content="صفحة تبرعات وتوعية مظللة بثيم دارك، 3D hero، معرض صور، آيات وحديث ومكان للتبرع." />
+
+  <!-- Tailwind CSS (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- AOS for scroll animations -->
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+
+  <!-- Google Fonts (Arabic-friendly + Inter) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    :root{
+      --bg-1: #06070a;
+      --bg-2: #0e1115;
+      --muted: #9aa4b2;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+    }
+
+    html,body { height:100%; background: linear-gradient(180deg,var(--bg-1),var(--bg-2)); color:#e6eef6; font-family: 'Inter', system-ui, -apple-system, 'Cairo', sans-serif; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+
+    /* card base */
+    .glass {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.04);
+      backdrop-filter: blur(6px);
+    }
+
+    /* small glow */
+    .glow {
+      box-shadow: 0 6px 30px rgba(16,185,129,0.06), inset 0 1px 0 rgba(255,255,255,0.02);
+    }
+
+    /* canvas fits container */
+    #hero-canvas { width:100%; height:100%; display:block; }
+
+    /* gallery overlay text */
+    .overlay {
+      background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.45) 100%);
+    }
+
+    /* Arabic typography tuning */
+    .arabic { font-family: 'Cairo', sans-serif; }
+    .leading-tight-ar { line-height:1.05; }
+
+    /* responsive hero height */
+    .hero-h { min-height: 68vh; }
+    @media (max-width:640px){ .hero-h{ min-height: 48vh; } }
+  </style>
+</head>
+<body>
+
+  <div class="max-w-7xl mx-auto px-6 lg:px-8">
+
+    <!-- NAV -->
+    <header class="flex items-center justify-between py-6">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center shadow">
+          <!-- simple icon -->
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M5 4v16l11-8L5 4z" fill="#ef4444"/></svg>
+        </div>
+        <div>
+          <h1 class="text-white text-lg font-bold arabic">غـزة</h1>
+          <p class="text-sm text-gray-400">تضامن • توعية • دعم</p>
+        </div>
+      </div>
+
+      <nav class="flex items-center gap-4">
+        <a href="#gaza" class="text-sm text-gray-300 hover:text-white transition arabic">عن غزه</a>
+        <a href="#quotes" class="text-sm text-gray-300 hover:text-white transition arabic">اقتباسات</a>
+        <a href="#donate" class="text-sm text-gray-300 hover:text-white transition arabic">تبرع</a>
+        <a href="#donate" class="ml-2 inline-flex items-center gap-2 rounded-lg px-4 py-2 bg-gradient-to-r from-red-600 to-pink-600 text-sm font-semibold shadow-lg hover:scale-[1.03] transform transition">
+          تبرع الآن
+        </a>
+      </nav>
+    </header>
+
+    <!-- HERO -->
+    <section id="hero" class="relative hero-h rounded-3xl overflow-hidden glass glow">
+      <!-- Canvas -->
+      <div id="hero-3d" class="absolute inset-0">
+        <canvas id="hero-canvas" aria-hidden></canvas>
+      </div>
+
+      <!-- overlay content -->
+      <div class="relative z-10 h-full flex flex-col justify-center lg:justify-end p-6 lg:p-12">
+        <div class="max-w-3xl text-right arabic" data-aos="fade-up" data-aos-duration="800">
+          <span class="inline-block text-xs uppercase px-3 py-1 rounded-full text-green-300 bg-white/5">Stand with Gaza</span>
+
+          <h2 class="mt-4 text-3xl lg:text-5xl font-extrabold leading-tight-ar">غزة — أصوات الصمود والأمل</h2>
+          <p class="mt-3 text-gray-300 max-w-2xl">مساحة لتذكّر المتأثرين، رفع الوعي، والمساهمة في دعم من يحتاج. استعرض الصور، تأمل في الكلمات، وفكر في التبرع لمنظمات موثوقة.</p>
+
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a href="#gallery" class="px-4 py-2 bg-white/6 rounded-md text-sm hover:bg-white/10 transition">تصفح المعرض</a>
+            <a href="#donate" class="px-4 py-2 bg-gradient-to-r from-red-500 to-rose-500 rounded-md text-sm font-semibold shadow hover:scale-105 transition">تبرع</a>
+            <button id="gaza-btn" class="px-4 py-2 border border-white/8 rounded-md text-sm hover:scale-105 transition">Gaza</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- soft bottom fade -->
+      <div class="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
+    </section>
+
+    <!-- GALLERY -->
+    <section id="gallery" class="mt-10">
+      <div class="flex items-center justify-between">
+        <h3 class="text-2xl font-semibold arabic">المعرض</h3>
+        <p class="text-sm text-gray-400 arabic">في القلب يا غزة</p>
+      </div>
+
+      <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <figure class="relative overflow-hidden rounded-2xl group">
+          <img src="data:image/webp;base64,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"
+               alt="Gaza placeholder 1" class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-[1.06]" loading="lazy" />
+          <div class="absolute inset-0 overlay transition-opacity duration-400 opacity-0 group-hover:opacity-100"></div>
+          <figcaption class="absolute bottom-4 right-4 left-4 text-right text-sm text-white opacity-0 translate-y-3 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+            <div class="bg-black/30 px-3 py-2 rounded-md backdrop-blur-sm">
+              <strong class="block">الأقصى عهد ووعد، لن يضيع</strong>
+              <span class="text-gray-200/80 text-xs">المسجد الأقصى… قبلة أولى، وقدسٌ باقٍ في قلوبنا.</span>
+            </div>
+          </figcaption>
+        </figure>
+
+        <figure class="relative overflow-hidden rounded-2xl group">
+          <img src="https://cnn-arabic-images.cnn.io/cloudinary/image/upload/x_0,y_412,w_5992,h_3370,c_crop/w_1920,h_1008,c_fill,q_auto,g_center/t_cnnarabic_watermark_logo_v5/cnnarabic/2023/10/27/images/253165.jpg"
+               alt="Gaza placeholder 2" class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-[1.06]" loading="lazy" />
+          <div class="absolute inset-0 overlay transition-opacity duration-400 opacity-0 group-hover:opacity-100"></div>
+          <figcaption class="absolute bottom-4 right-4 left-4 text-right text-sm text-white opacity-0 translate-y-3 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+            <div class="bg-black/30 px-3 py-2 rounded-md backdrop-blur-sm">
+              <strong class="block">صمود</strong>
+              <span class="text-gray-200/80 text-xs">بيوتٌ كانت تضج بالحياة، صارت ركامًا صامتًا</span>
+            </div>
+          </figcaption>
+        </figure>
+
+        <figure class="relative overflow-hidden rounded-2xl group">
+          <img src="https://tse2.mm.bing.net/th/id/OIP.wDJIefZXRMZwVllxzI6JMgHaEK?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
+               alt="Gaza placeholder 3" class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-[1.06]" loading="lazy" />
+          <div class="absolute inset-0 overlay transition-opacity duration-400 opacity-0 group-hover:opacity-100"></div>
+          <figcaption class="absolute bottom-4 right-4 left-4 text-right text-sm text-white opacity-0 translate-y-3 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+            <div class="bg-black/30 px-3 py-2 rounded-md backdrop-blur-sm">
+              <strong class="block">أمل</strong>
+              <span class="text-gray-200/80 text-xs">وبشر الصابرين.</span>
+            </div>
+          </figcaption>
+        </figure>
+
+        <figure class="relative overflow-hidden rounded-2xl group">
+          <img src="https://etbilarabi.com/sites/default/files/styles/article_landing/public/2023-11/%D8%AB%D8%AB%D9%81%D9%84%D8%B6%D9%86.JPG?itok=gobt3R6X"
+               alt="Gaza placeholder 4" class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-[1.06]" loading="lazy" />
+          <div class="absolute inset-0 overlay transition-opacity duration-400 opacity-0 group-hover:opacity-100"></div>
+          <figcaption class="absolute bottom-4 right-4 left-4 text-right text-sm text-white opacity-0 translate-y-3 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+            <div class="bg-black/30 px-3 py-2 rounded-md backdrop-blur-sm">
+              <strong class="block">أمة لا تنكسر</strong>
+              <span class="text-gray-200/80 text-xs">غزة… عنوان الكرامة.</span>
+            </div>
+          </figcaption>
+        </figure>
+
+      </div>
+    </section>
+
+    <!-- QUOTES -->
+    <section id="quotes" class="mt-12">
+      <h3 class="text-2xl font-semibold arabic">آيات وأحاديث</h3>
+      <p class="text-sm text-gray-400 arabic mt-1">كلمات للتأمل: الصبر، الأخوّة، ونصرة المظلوم.</p>
+
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <blockquote class="p-6 rounded-2xl glass shadow-lg arabic" data-aos="fade-up" data-aos-duration="600">
+          <div class="flex items-start gap-4">
+            <div class="flex-none">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-green-300 font-semibold">قُرْآن</div>
+            </div>
+            <div class="min-w-0">
+              <p class="text-right text-lg font-medium leading-relaxed-ar" dir="rtl">وَاعْتَصِمُوا بِحَبْلِ اللَّهِ جَمِيعًا وَلَا تَفَرَّقُوا</p>
+              <p class="mt-3 text-sm text-gray-300">“واعتصموا بحبل الله جميعًا ولا تفرقوا” — تذكير بالوحدة والتكاتف.</p>
+              <p class="mt-3 text-xs text-gray-500">(آية)</p>
+            </div>
+          </div>
+        </blockquote>
+
+        <blockquote class="p-6 rounded-2xl glass shadow-lg" data-aos="fade-up" data-aos-duration="600" data-aos-delay="100">
+          <div class="flex items-start gap-4">
+            <div class="flex-none">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-amber-300 font-semibold">حديث</div>
+            </div>
+            <div>
+              <p class="text-lg font-medium">"خير الناس أنفعهم للناس"</p>
+              <p class="mt-3 text-sm text-gray-300">حديث يُحفز على مساعدة الآخرين والعمل لصالح المجتمع.</p>
+              <p class="mt-3 text-xs text-gray-500">(حديث)</p>
+            </div>
+          </div>
+        </blockquote>
+
+        <blockquote class="p-6 rounded-2xl glass shadow-lg arabic" data-aos="fade-up" data-aos-duration="600" data-aos-delay="200">
+          <div class="flex items-start gap-4">
+            <div class="flex-none">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-blue-300 font-semibold">قُرْآن</div>
+            </div>
+            <div>
+              <p class="text-right text-lg font-medium leading-relaxed-ar" dir="rtl">إِنَّمَا الْمُؤْمِنُونَ إِخْوَةٌ</p>
+              <p class="mt-3 text-sm text-gray-300">“المؤمنون إخوة” — دعوة للترابط والتراحم.</p>
+            </div>
+          </div>
+        </blockquote>
+
+        <blockquote class="p-6 rounded-2xl glass shadow-lg" data-aos="fade-up" data-aos-duration="600" data-aos-delay="300">
+          <div class="flex items-start gap-4">
+            <div class="flex-none">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-red-300 font-semibold">حديث</div>
+            </div>
+            <div>
+              <p class="text-lg font-medium">"من فرّج عن مؤمن كربة من كرب الدنيا فرّج الله عنه كربة من كرب يوم القيامة"</p>
+              <p class="mt-3 text-sm text-gray-300">تشجيع على تفريج الهموم ومساعدة المحتاجين.</p>
+            </div>
+          </div>
+        </blockquote>
+      </div>
+
+      <p class="mt-4 text-xs text-gray-500">ملاحظة: اقتباسات مكتوبة هنا للعرض.</p>
+    </section>
+      <!-- ABOUT GAZA -->
+    <section id="gaza" class="mt-12">
+      <div class="rounded-2xl glass shadow-xl p-8" data-aos="fade-up">
+        <h3 class="text-2xl font-bold arabic mb-4">عن غزة</h3>
+        <p class="text-gray-300 arabic leading-relaxed">
+          غزة ليست مجرد مكان على الخريطة، بل قصة صمود وأمل رغم التحديات.
+          يمكنك دعم أهلها بالدعاء، بالمساهمة المالية، أو حتى بنشر الوعي بين الناس.
+        </p>
+        <ul class="list-disc pr-6 mt-4 text-gray-400 arabic space-y-2">
+          <li>بالدعاء: تذكّرهم في صلواتك.</li>
+          <li>بالمساهمة: تبرع لمنظمات موثوقة.</li>
+          <li>بالمشاركة: انشر الوعي عبر وسائل التواصل.</li>
+          <li>بالقلب: تعاطفك ودعمك المعنوي له قيمة عظيمة.</li>
+        </ul>
+      </div>
+    </section>
+
+<!-- قسم التبرعات -->
+<section id="donate" class="mx-auto max-w-7xl px-4 py-16 md:py-24">
+  <div class="rounded-3xl border border-gray-700 bg-black/90 p-10 md:p-14 shadow-soft relative overflow-hidden">
+    <div class="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-red-500/20"></div>
+    <div class="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-green-500/20"></div>
+
+    <div class="relative z-10 grid md:grid-cols-2 gap-10 items-center text-right">
+      <div>
+        <h2 class="text-3xl md:text-4xl font-bold text-white">ادعم الجمعيات الموثوقة</h2>
+        <p class="mt-4 text-gray-400">
+          تبرعك يمكن أن يساعد في توفير المساعدات الطبية، الطعام، والمأوى. الزر التالي
+          يوجهك إلى موقع موثوق للتبرعات.
+        </p>
+        <ul class="mt-6 text-sm text-gray-400 list-disc pr-5">
+          <li>زر واضح وسهل الاستخدام</li>
+          <li>يفتح الرابط في نافذة جديدة بأمان</li>
+        </ul>
+      </div>
+      <div class="text-center">
+        <a
+          id="donate-link"
+          href="https://www.unrwa.org/donate"
+          target="_blank" rel="noopener noreferrer"
+          class="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-red-600 text-white font-semibold shadow-lg hover:shadow-red-500/70 hover:-translate-y-1 hover:scale-105 active:scale-95 transition focus:outline-none focus:ring-4 focus:ring-red-400/70 animate-pulse"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-5 h-5">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 4 4 6.5 4c1.74 0 3.41
+            1.01 4.22 2.53C11.09 5.01 12.76 4 14.5 4 17
+            4 19 6 19 8.5c0 3.78-3.4
+            6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          تبرع الآن
+        </a>
+        <p class="mt-3 text-xs text-gray-500">رابط موثوق</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- FOOTER -->
+<footer class="mt-16 border-t border-gray-700 bg-black/90 py-8 text-sm text-gray-400">
+  <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+    <p class="arabic text-center md:text-right">
+      © <span id="year"></span> غـزة — صفحة توعية ودعم
+    </p>
+    <div class="flex gap-6">
+      <a class="hover:text-red-500 transition" href="#">الخصوصية</a>
+      <a class="hover:text-red-500 transition" href="#">الشروط</a>
+    </div>
+  </div>
+</footer>
+<script>
+  // لتحديث السنة تلقائياً
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
+  </div>
+
+  <!-- SCRIPTS -->
+
+  <!-- AOS init -->
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script>
+    AOS.init({ once: true, offset: 100, duration: 500, easing: 'ease-out-cubic' });
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+
+  <!-- THREE.JS HERO (flag + particles + soft glow) -->
+  <script>
+    (function(){
+      // Basic scene + renderer
+      const canvas = document.getElementById('hero-canvas');
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setClearColor(0x000000, 0); // transparent background
+
+      const scene = new THREE.Scene();
+
+      const camera = new THREE.PerspectiveCamera(35, 2, 0.1, 100);
+      camera.position.set(0, 0, 5.2);
+
+      // lighting
+      const ambient = new THREE.AmbientLight(0xffffff, 0.9);
+      scene.add(ambient);
+      const dir = new THREE.DirectionalLight(0xffffff, 0.15);
+      dir.position.set(-2, 2, 5);
+      scene.add(dir);
+
+      // flag plane geometry (subdivided for smooth waves)
+      const planeW = 4.4, planeH = 2.6;
+      const geo = new THREE.PlaneGeometry(planeW, planeH, 128, 64);
+
+      // shader material (similar to previous but smoother and tinted)
+      const mat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0 },
+          uAmp: { value: 0.12 },
+          uRes: { value: new THREE.Vector2() }
+        },
+        vertexShader: `
+          uniform float uTime;
+          uniform float uAmp;
+          varying vec2 vUv;
+          varying vec3 vPos;
+          void main(){
+            vUv = uv;
+            vPos = position;
+            float wave = sin((position.x * 6.0) + uTime * 2.0) * (uAmp * (1.0 - abs(position.y) * 0.6));
+            vec3 pos = position + normal * wave * 0.8;
+            pos.z += sin((position.x * 2.0) + uTime * 1.3) * (uAmp * 0.05) ;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(pos,1.0);
+          }
+        `,
+        fragmentShader: `
+          varying vec2 vUv;
+          void main(){
+            vec3 blackC = vec3(0.06,0.06,0.06);
+            vec3 whiteC = vec3(0.98,0.98,0.97);
+            vec3 greenC = vec3(0.06,0.56,0.34);
+            vec3 redC   = vec3(0.86,0.18,0.18);
+
+            float y = vUv.y;
+            vec3 stripe = (y > 0.66) ? blackC : (y > 0.33 ? whiteC : greenC);
+
+            // triangle near left (hoist)
+            float tri = smoothstep(0.0, 0.02, (0.35 - vUv.x) - abs(vUv.y - 0.5)*0.9);
+
+            vec3 color = mix(stripe, redC, tri);
+
+            // subtle vignette
+            float d = distance(vUv, vec2(0.5));
+            color *= mix(1.0, 0.88, smoothstep(0.5, 0.95, d));
+
+            gl_FragColor = vec4(color,1.0);
+          }
+        `,
+        side: THREE.DoubleSide,
+      });
+
+      const flag = new THREE.Mesh(geo, mat);
+      scene.add(flag);
+      flag.rotation.y = -0.05;
+      flag.rotation.x = 0.02;
+
+      // Add soft glowing disc behind the flag for depth
+      const glowGeo = new THREE.CircleGeometry(1.8, 64);
+      const glowMat = new THREE.MeshBasicMaterial({ color: 0x0b1220, side: THREE.DoubleSide, transparent: true, opacity: 0.7 });
+      const glow = new THREE.Mesh(glowGeo, glowMat);
+      glow.position.set(-0.8, 0, -1.2);
+      glow.scale.set(2.6, 2.6, 1);
+      scene.add(glow);
+
+      // Particles (points)
+      const particlesCount = 120;
+      const positions = new Float32Array(particlesCount * 3);
+      for (let i=0;i<particlesCount;i++){
+        positions[i*3+0] = (Math.random()-0.5) * 6.5;
+        positions[i*3+1] = (Math.random()-0.5) * 3.2;
+        positions[i*3+2] = (Math.random()-0.5) * 1.4;
+      }
+      const partGeo = new THREE.BufferGeometry();
+      partGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      const partMat = new THREE.PointsMaterial({ size: 0.02, sizeAttenuation: true, transparent: true, opacity: 0.85 });
+      const parts = new THREE.Points(partGeo, partMat);
+      scene.add(parts);
+
+      // Resize utils
+      function resize() {
+        const container = document.getElementById('hero-3d');
+        const rect = container.getBoundingClientRect();
+        const w = Math.max(300, rect.width);
+        const h = Math.max(150, rect.height);
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+      }
+      window.addEventListener('resize', resize);
+      window.addEventListener('orientationchange', resize);
+      resize();
+
+      // subtle mouse parallax
+      let mouseX = 0, mouseY = 0;
+      window.addEventListener('mousemove', (e) => {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        mouseX = (e.clientX / w) * 2 - 1;
+        mouseY = (e.clientY / h) * 2 - 1;
+      });
+
+      // animation loop
+      let last = 0;
+      function animate(t){
+        t *= 0.001;
+        mat.uniforms.uTime.value = t;
+        // sway flag
+        flag.rotation.z = Math.sin(t * 0.6) * 0.02;
+        // particles float
+        parts.rotation.y = Math.sin(t * 0.1) * 0.08;
+        // parallax
+        flag.rotation.y = -0.06 + mouseX * 0.02;
+        flag.rotation.x = 0.02 + mouseY * 0.01;
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+      requestAnimationFrame(animate);
+
+      // touch: small tilt on touch
+      window.addEventListener('touchmove', (e) => {
+        if (!e.touches || !e.touches[0]) return;
+        const t0 = e.touches[0];
+        mouseX = (t0.clientX / window.innerWidth) * 2 - 1;
+        mouseY = (t0.clientY / window.innerHeight) * 2 - 1;
+      });
+
+    })();
+  </script>
+
+  <!-- Small UI interactions -->
+  <script>
+    document.getElementById('gaza-btn').addEventListener('click', () => {
+      const btn = document.getElementById('gaza-btn');
+      btn.animate([{ transform: 'scale(1)' }, { transform:'scale(1.06)' }, { transform:'scale(1)' }], { duration: 260, easing: 'ease-out' });
+      document.querySelector('#gallery').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    document.getElementById('learn')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.querySelector('#quotes').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  </script>
+</body>
+</html>

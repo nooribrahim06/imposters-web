@@ -1,0 +1,228 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Pan Toss - Granny Game</title>
+  <style>
+    :root{
+      --bg:#f6c21a;
+      --ink:#222;
+      --accent:#0a7;
+      --accent-2:#0a78;
+      --card:#fff5cc;
+    }
+    html,body{height:100%;margin:0;background:var(--bg);font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink)}
+    .hud{position:fixed;inset:12px 12px auto 12px;display:flex;gap:8px;align-items:center;z-index:10}
+    .pill{background:rgba(255,255,255,.75);backdrop-filter: blur(6px);padding:8px 12px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.15);font-weight:700}
+    .btn{cursor:pointer;user-select:none}
+    .btn.primary{background:var(--accent);color:#fff}
+    .btn.primary:hover{background:var(--accent-2)}
+    .center-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;}
+    .card{background:var(--card);padding:18px 20px;border-radius:20px;box-shadow:0 16px 40px rgba(0,0,0,.25);max-width:520px;width:min(92vw,520px);text-align:center;border:2px solid rgba(0,0,0,.07)}
+    .card h1{margin:.1rem 0 .6rem;font-size:clamp(22px,3.8vw,32px)}
+    .card p{margin:.4rem 0 1rem;line-height:1.6}
+    .card .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+    canvas{display:block;width:100vw;height:100vh}
+    .tap-hint{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.8);padding:6px 10px;border-radius:12px;font-weight:700}
+  </style>
+</head>
+<body>
+  <div class="hud">
+    <div id="score" class="pill">Score: 0</div>
+    <div id="high" class="pill">High: 0</div>
+    <div id="state" class="pill">Ready</div>
+    <div id="restart" class="pill btn primary" title="Restart">↻ Restart</div>
+  </div>
+  <div id="overlay" class="center-overlay">
+    <div class="card">
+      <h1>🎯 Pan Toss</h1>
+      <p>The pan spins around Granny. <b>Tap/Click</b> to throw the pan and hit the mouse!
+         If the pan leaves the screen without hitting, you lose a life.</p>
+      <div class="row" style="justify-content:center;margin-top:10px">
+        <button id="play" class="pill btn primary" style="font-size:1.05rem">Start Game</button>
+      </div>
+      <p style="opacity:.8;margin-top:10px">Tip: Each hit makes the mouse faster. You only have 3 lives 😉</p>
+    </div>
+  </div>
+  <div class="tap-hint">Tap/Click to throw</div>
+  <canvas id="game"></canvas>
+
+<script>
+(()=>{
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const scoreEl = document.getElementById('score');
+  const highEl = document.getElementById('high');
+  const stateEl = document.getElementById('state');
+  const overlay = document.getElementById('overlay');
+  const playBtn = document.getElementById('play');
+  const restartBtn = document.getElementById('restart');
+
+  let W=innerWidth,H=innerHeight;
+  function resize(){ W=innerWidth; H=innerHeight; canvas.width=W; canvas.height=H; }
+  addEventListener('resize', resize, {passive:true}); resize();
+
+  // ===== Game State =====
+  const granny = {x: W/2, y: H/2, r: 24};
+  const pan = {angle: 0, orbitR: 80, r: 16, x: 0, y: 0, vx: 0, vy: 0, spinning: true};
+  const mouse = {x:0,y:0,r:18, vx:0, vy:0};
+  let score = 0, high = Number(localStorage.getItem('pan_high')||0);
+  let playing = false;
+  let lives = 3;
+
+  highEl.textContent = 'High: ' + high;
+
+  // ===== Sounds =====
+  const sndThrow = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg");
+  const sndHit = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+  const sndLose = new Audio("https://actions.google.com/sounds/v1/cartoon/slide_whistle_to_drum_hit.ogg");
+
+  function resetRound(){
+    pan.spinning = true; pan.vx=pan.vy=0;
+    pan.angle = (Math.random()*Math.PI*2);
+    pan.orbitR = Math.max(70, Math.min(W,H)*0.1);
+    // mouse spawn
+    const margin = 60;
+    do{
+      mouse.x = margin + Math.random()*(W-2*margin);
+      mouse.y = margin + Math.random()*(H-2*margin);
+    } while (Math.hypot(mouse.x-granny.x, mouse.y-granny.y) < 140);
+    // mouse velocity random
+    const ang = Math.random()*Math.PI*2;
+    const base = 1.2 + Math.min(2.5, score*0.08);
+    mouse.vx = Math.cos(ang)*base; mouse.vy = Math.sin(ang)*base;
+    stateEl.textContent = 'Aim & Throw';
+  }
+
+  function start(){
+    playing = true; score = 0; lives=3;
+    scoreEl.textContent = 'Score: 0';
+    granny.x = W/2; granny.y = H/2;
+    resetRound();
+    overlay.style.display='none';
+  }
+
+  playBtn.addEventListener('click', start);
+  restartBtn.addEventListener('click', ()=>{start()});
+
+  function throwPan(){
+    if(!playing || !pan.spinning) return;
+    const dir = pan.angle;
+    const speed = 9 + score*0.35;
+    pan.vx = Math.cos(dir)*speed;
+    pan.vy = Math.sin(dir)*speed;
+    pan.spinning = false;
+    stateEl.textContent = 'Pan flying!';
+    sndThrow.currentTime=0; sndThrow.play();
+  }
+
+  ['mousedown','touchstart','pointerdown'].forEach(ev=>addEventListener(ev,(e)=>{ e.preventDefault(); throwPan(); },{passive:false}));
+
+  const TWO_PI = Math.PI*2;
+
+  function update(){
+    if(pan.spinning){
+      pan.angle = (pan.angle + (0.02 + score*0.0012)) % TWO_PI;
+      pan.x = granny.x + Math.cos(pan.angle)*pan.orbitR;
+      pan.y = granny.y + Math.sin(pan.angle)*pan.orbitR;
+    } else {
+      pan.x += pan.vx; pan.y += pan.vy;
+    }
+
+    // mouse moves & wraps around screen
+    mouse.x += mouse.vx; mouse.y += mouse.vy;
+    if(mouse.x< -mouse.r) mouse.x = W+mouse.r;
+    if(mouse.x> W+mouse.r) mouse.x = -mouse.r;
+    if(mouse.y< -mouse.r) mouse.y = H+mouse.r;
+    if(mouse.y> H+mouse.r) mouse.y = -mouse.r;
+
+    // collisions
+    if(!pan.spinning){
+      const hit = Math.hypot(pan.x-mouse.x, pan.y-mouse.y) <= pan.r + mouse.r;
+      if(hit){
+        score++; scoreEl.textContent = 'Score: ' + score;
+        stateEl.textContent = 'Great Hit!';
+        sndHit.currentTime=0; sndHit.play();
+        if(score>high){ high=score; localStorage.setItem('pan_high',high); highEl.textContent='High: '+high; }
+        resetRound();
+      }
+    }
+
+    // if flew out of screen -> lose a life
+    if(!pan.spinning && (pan.x<-80||pan.x>W+80||pan.y<-80||pan.y>H+80)){
+      lives--;
+      if(lives<=0){
+        playing=false;
+        stateEl.textContent="Game Over!";
+        sndLose.play();
+        overlay.style.display='flex';
+        overlay.querySelector("h1").textContent="💀 Game Over";
+        overlay.querySelector("p").textContent="Final Score: "+score+" | High: "+high;
+      } else {
+        stateEl.textContent="Missed! Lives left: "+lives;
+        resetRound();
+      }
+    }
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    // mouse
+    drawMouse(mouse.x, mouse.y, mouse.r, '#6b4e16', 1);
+    // granny
+    drawGranny(granny.x, granny.y, granny.r);
+    // orbit line
+    if(pan.spinning){
+      ctx.strokeStyle = 'rgba(0,0,0,.18)';
+      ctx.lineWidth = 2; ctx.setLineDash([6,6]);
+      ctx.beginPath(); ctx.arc(granny.x,granny.y,pan.orbitR,0,TWO_PI); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    // pan
+    drawPan(pan.x, pan.y, pan.r, pan.spinning?pan.angle:Math.atan2(pan.vy,pan.vx));
+  }
+
+  function loop(){ if(playing)update(); draw(); requestAnimationFrame(loop); }
+
+  // === Draw helpers (same as before) ===
+  function drawGranny(x,y,r){
+    ctx.save(); ctx.translate(x,y);
+    ctx.fillStyle = '#ff702a';
+    ctx.beginPath(); ctx.arc(0,0,r+8,0,TWO_PI); ctx.fill();
+    ctx.fillStyle = '#f7d7b1';
+    ctx.beginPath(); ctx.arc(0,-6,r,0,TWO_PI); ctx.fill();
+    ctx.fillStyle = '#c9c9c9';
+    ctx.beginPath(); ctx.arc(0,-10,r*0.85,Math.PI,0); ctx.fill();
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(-6,-6,4,0,TWO_PI); ctx.arc(6,-6,4,0,TWO_PI); ctx.moveTo(-2,-6); ctx.lineTo(2,-6); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0,-1,5,0,Math.PI); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawPan(x,y,r,angle){
+    ctx.save(); ctx.translate(x,y); ctx.rotate(angle);
+    ctx.fillStyle = '#173f4b';
+    ctx.fillRect(-r*1.8,-6,r*1.4,12);
+    ctx.beginPath(); ctx.fillStyle = '#0b2d36';
+    ctx.arc(r*0.6,0,r,0,TWO_PI); ctx.fill();
+    ctx.beginPath(); ctx.fillStyle = '#102f38';
+    ctx.arc(r*0.6,0,r*0.65,0,TWO_PI); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawMouse(x,y,r,color='#6b4e16',alpha=1){
+    ctx.save(); ctx.globalAlpha = alpha; ctx.translate(x,y);
+    ctx.fillStyle = color; ctx.beginPath(); ctx.arc(0,0,r,0,TWO_PI); ctx.fill();
+    ctx.fillStyle = '#8b5'; ctx.beginPath(); ctx.arc(-r*0.7,-r*0.6,r*0.45,0,TWO_PI); ctx.fill();
+    ctx.beginPath(); ctx.arc(r*0.7,-r*0.6,r*0.45,0,TWO_PI); ctx.fill();
+    ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(r*0.25,-r*0.1,r*0.12,0,TWO_PI); ctx.fill();
+    ctx.fillStyle = '#e89'; ctx.beginPath(); ctx.arc(r*0.95,0,r*0.18,0,TWO_PI); ctx.fill();
+    ctx.restore();
+  }
+
+  resetRound();
+  loop();
+})();
+</script>
+</body>
+</html>

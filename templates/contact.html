@@ -1,0 +1,93 @@
+{% extends "layout2.html" %}
+
+{% block title %}
+    Contact Us
+{% endblock %}
+
+{% block content %}
+    <!-- Hero Section -->
+    <section id="home" class="hero-section text-center">
+        <h2 class="text-6xl font-bold mb-8 neon-title">Contact Us</h2>
+        <p class="text-lg text-gray-400 mb-12">Connect with us on LinkedIn and GitHub</p>
+    </section>
+
+    <!-- Team Contacts -->
+    <section class="py-24 bg-[#121212]">
+        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-16 px-4 justify-items-center">
+
+            <!-- Youssef -->
+            <div class="person-card w-96 p-12 backdrop-blur-md bg-white/5 border border-white/10 rounded-3xl
+                        shadow-lg text-center transition hover:scale-105 hover:shadow-xl">
+                <h3 class="text-3xl font-bold mb-8 text-blue-500">Youssef Sayed</h3>
+                <div class="flex justify-center gap-10 text-5xl">
+                    <a href="https://www.linkedin.com/in/youssef-sayed-96194b371" target="_blank"
+                       class="neon-linkedin">
+                        <i class="bi bi-linkedin"></i>
+                    </a>
+                    <a href="https://github.com/Youssef12as" target="_blank"
+                       class="neon-github">
+                        <i class="bi bi-github"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Mohamed -->
+            <div class="person-card w-96 p-12 backdrop-blur-md bg-white/5 border border-white/10 rounded-3xl
+                        shadow-lg text-center transition hover:scale-105 hover:shadow-xl">
+                <h3 class="text-3xl font-bold mb-8 text-purple-500">Mohamed Osama</h3>
+                <div class="flex justify-center gap-10 text-5xl">
+                    <a href="https://www.linkedin.com/in/mohamed-osama-122766343" target="_blank"
+                       class="neon-linkedin">
+                        <i class="bi bi-linkedin"></i>
+                    </a>
+                    <a href="https://github.com/Muhmd95" target="_blank"
+                       class="neon-github">
+                        <i class="bi bi-github"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="person-card w-96 p-12 backdrop-blur-md bg-white/5 border border-white/10 rounded-3xl
+                        shadow-lg text-center transition hover:scale-105 hover:shadow-xl">
+                <h3 class="text-3xl font-bold mb-8 text-pink-500">Nour Ibrahim</h3>
+                <div class="flex justify-center gap-10 text-5xl">
+                    <a href="https://www.linkedin.com/in/nour-ibrahim-57967736a" target="_blank"
+                       class="neon-linkedin">
+                        <i class="bi bi-linkedin"></i>
+                    </a>
+                    <a href="https://github.com/nooribrahim06" target="_blank"
+                       class="neon-github">
+                        <i class="bi bi-github"></i>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <style>
+        .neon-title {
+            color: #fff;
+            text-shadow: 0 0 15px #00f7ff, 0 0 30px #00f7ff, 0 0 45px #00f7ff;
+        }
+
+        .person-card {
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .person-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+        }
+
+
+        .neon-linkedin i:hover {
+            text-shadow: 0 0 10px #0A66C2, 0 0 20px #0A66C2, 0 0 40px #0A66C2;
+        }
+
+        .neon-github i:hover {
+            text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 40px #fff;
+        }
+    </style>
+{% endblock %}
+
+

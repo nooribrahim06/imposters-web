@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Snake Game</title>
+  <style>
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    h1 {
+      color: #00ff99;
+      text-shadow: 0 0 10px #00ff99;
+    }
+    #gameCanvas {
+      border: 3px solid #fff;
+      background: #111;
+      display: none;
+      box-shadow: 0 0 20px rgba(255,255,255,0.2);
+    }
+    #scoreBoard {
+      color: white;
+      font-size: 22px;
+      margin: 10px;
+      display: flex;
+      gap: 20px;
+    }
+    .score {
+      padding: 5px 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+    }
+    .high-score {
+      color: red;
+      font-weight: bold;
+    }
+    .btn {
+      padding: 10px 20px;
+      font-size: 18px;
+      margin: 5px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #00cc66;
+      color: white;
+      transition: 0.2s;
+    }
+    .btn:hover {
+      background: #009944;
+      transform: scale(1.05);
+    }
+    #balloons {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      display: none;
+    }
+    .balloon {
+      position: absolute;
+      bottom: -100px;
+      width: 40px;
+      height: 60px;
+      border-radius: 50%;
+      background: red;
+      animation: rise 4s linear forwards;
+    }
+    @keyframes rise {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(-120vh); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <h1>🐍 Snake Game</h1>
+  <div id="scoreBoard">
+    <div class="score">Score: <span id="scoreValue">0</span></div>
+    <div class="score">High Score: <span id="highScoreValue">0</span></div>
+  </div>
+  <canvas id="gameCanvas" width="400" height="400"></canvas>
+  <div>
+    <button id="startBtn" class="btn">Start</button>
+    <button id="restartBtn" class="btn" style="display:none;">Restart</button>
+  </div>
+  <div id="balloons"></div>
+
+  <audio id="startSound" src="sounds/start.mp3"></audio>
+  <audio id="endSound" src="sounds/end.mp3"></audio>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const startBtn = document.getElementById("startBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const scoreValue = document.getElementById("scoreValue");
+    const highScoreValue = document.getElementById("highScoreValue");
+    const startSound = document.getElementById("startSound");
+    const endSound = document.getElementById("endSound");
+    const balloonsContainer = document.getElementById("balloons");
+
+    const box = 20;
+    let snake, direction, score, food, specialFood, obstacles, level, game;
+    let highScore = 0;
+
+    function resetGame() {
+      snake = [{ x: 9 * box, y: 10 * box }];
+      direction = null;
+      score = 0;
+      food = randomPosition();
+      specialFood = null;
+      obstacles = [];
+      level = 1;
+      scoreValue.innerText = 0;
+    }
+
+    function randomPosition() {
+      return {
+        x: Math.floor(Math.random() * 20) * box,
+        y: Math.floor(Math.random() * 20) * box,
+      };
+    }
+
+    function drawBackground() {
+      ctx.fillStyle = level === 1 ? "#111" : level === 2 ? "#003366" : "#004d00";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+function drawSnake() {
+  for (let i = 0; i < snake.length; i++) {
+    let gradient = ctx.createLinearGradient(
+      snake[i].x, snake[i].y,
+      snake[i].x + box, snake[i].y + box
+    );
+
+    if (i === 0) {
+      gradient.addColorStop(0, "#00ff99");
+      gradient.addColorStop(0.5, "#00cc66");
+      gradient.addColorStop(1, "#00994d");
+    } else {
+      gradient.addColorStop(0, "#33cc33");
+      gradient.addColorStop(0.5, "#228b22");
+      gradient.addColorStop(1, "#145214");
+    }
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(snake[i].x, snake[i].y, box, box);
+
+    ctx.strokeStyle = "rgba(255,255,255,0.3)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(snake[i].x + 2, snake[i].y + 2, box - 4, box - 4);
+  }
+}
+
+   function drawFood() {
+  ctx.fillStyle = "red";
+  ctx.beginPath();
+  ctx.arc(food.x + box/2, food.y + box/2, box/2 - 2, 0, 2 * Math.PI);
+  ctx.fill();
+
+  if (specialFood) {
+    let goldGradient = ctx.createRadialGradient(
+      specialFood.x + box/2, specialFood.y + box/2, 2,
+      specialFood.x + box/2, specialFood.y + box/2, box/2
+    );
+    goldGradient.addColorStop(0, "#fff7b3");
+    goldGradient.addColorStop(1, "#d4af37");
+
+    ctx.fillStyle = goldGradient;
+    ctx.beginPath();
+    ctx.arc(specialFood.x + box/2, specialFood.y + box/2, box/2 - 2, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+}
+
+    function drawObstacles() {
+      ctx.fillStyle = "gray";
+      obstacles.forEach(obs => ctx.fillRect(obs.x, obs.y, box, box));
+    }
+
+    function drawGame() {
+      drawBackground();
+      drawFood();
+      drawObstacles();
+      drawSnake();
+
+      let snakeX = snake[0].x;
+      let snakeY = snake[0].y;
+
+      if (direction === "LEFT") snakeX -= box;
+      if (direction === "UP") snakeY -= box;
+      if (direction === "RIGHT") snakeX += box;
+      if (direction === "DOWN") snakeY += box;
+
+      if (snakeX === food.x && snakeY === food.y) {
+        score++;
+        scoreValue.innerText = score;
+        food = randomPosition();
+
+        if (score > highScore) {
+          highScore = score;
+          highScoreValue.innerText = highScore;
+          highScoreValue.classList.add("high-score");
+        }
+
+        if (score % 3 === 0) {
+          level++;
+          for (let i = 0; i < 5; i++) obstacles.push(randomPosition());
+        }
+
+        if (Math.random() < 0.3) {
+          specialFood = randomPosition();
+          setTimeout(() => { specialFood = null; }, 5000);
+        }
+      } else if (specialFood && snakeX === specialFood.x && snakeY === specialFood.y) {
+        score += 5;
+        scoreValue.innerText = score;
+        specialFood = null;
+      } else {
+        snake.pop();
+      }
+
+      let newHead = { x: snakeX, y: snakeY };
+
+      if (
+        snakeX < 0 || snakeY < 0 ||
+        snakeX >= canvas.width || snakeY >= canvas.height ||
+        collision(newHead, snake) || collision(newHead, obstacles)
+      ) {
+        clearInterval(game);
+        endSound.play();
+        restartBtn.style.display = "inline-block";
+        showBalloons();
+        return;
+      }
+
+      snake.unshift(newHead);
+    }
+
+    function collision(head, array) {
+      return array.some(part => head.x === part.x && head.y === part.y);
+    }
+
+    function showBalloons() {
+      balloonsContainer.style.display = "block";
+      balloonsContainer.innerHTML = "";
+      for (let i = 0; i < 20; i++) {
+        let balloon = document.createElement("div");
+        balloon.className = "balloon";
+        balloon.style.left = Math.random() * 100 + "%";
+        balloon.style.background = ["red", "blue", "green", "yellow", "purple"][Math.floor(Math.random() * 5)];
+        balloonsContainer.appendChild(balloon);
+      }
+      setTimeout(() => { balloonsContainer.style.display = "none"; }, 5000);
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+      else if (e.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+      else if (e.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+      else if (e.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+    });
+
+    startBtn.onclick = () => {
+      resetGame();
+      canvas.style.display = "block";
+      startBtn.style.display = "none";
+      restartBtn.style.display = "none";
+      startSound.play();
+      game = setInterval(drawGame, 120);
+    };
+
+    restartBtn.onclick = () => {
+      resetGame();
+      restartBtn.style.display = "none";
+      startSound.play();
+      game = setInterval(drawGame, 120);
+    };
+  </script>
+</body>
+</html>

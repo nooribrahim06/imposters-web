@@ -1,0 +1,10 @@
+Flask cs50
+
+do this steps in the terminal in order
+
+1)pip install ffmpeg-python
+2)pip show ffmpeg-python
+3)sudo apt-get update
+4)sudo apt-get install ffmpeg
+5)ffmpeg -version
+ versions should appear

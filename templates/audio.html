@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Retro Audio Volume Adjuster</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap');
+
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at top, #0f0f2d, #000010 80%);
+    font-family: 'Orbitron', sans-serif;
+    color: #fff;
+    overflow: hidden;
+  }
+
+  /* Retro grid background */
+  body::before {
+    content: "";
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background-image: linear-gradient(#0ff3 1px, transparent 1px),
+                      linear-gradient(90deg, #0ff3 1px, transparent 1px);
+    background-size: 50px 50px;
+    transform: perspective(600px) rotateX(60deg);
+    top: -50%;
+    left: -50%;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    background: rgba(30, 30, 60, 0.9);
+    border-radius: 20px;
+    padding: 40px 50px;
+    box-shadow:
+      0 0 25px #0ff,
+      0 0 50px #0ff,
+      inset 0 0 20px #0ff;
+    width: 400px;
+    text-align: center;
+    animation: floaty 5s ease-in-out infinite alternate;
+  }
+
+  @keyframes floaty {
+    from { transform: translateY(-5px) rotateX(2deg); }
+    to   { transform: translateY(5px) rotateX(-2deg); }
+  }
+
+  h1 {
+    margin-bottom: 30px;
+    font-size: 2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-shadow:
+      0 0 10px #ff0,
+      0 0 20px #f0f,
+      0 0 40px #0ff;
+  }
+
+  input[type="file"] {
+    display: none;
+  }
+
+  label[for="audiofile"] {
+    display: inline-block;
+    background: linear-gradient(145deg, #ff00ff, #ff0080);
+    border-radius: 12px;
+    padding: 12px 25px;
+    cursor: pointer;
+    font-weight: 600;
+    text-shadow: 0 0 10px #000;
+    color: #fff;
+    box-shadow: 0 0 15px #ff00ff, inset 0 0 8px #ff0080;
+    transition: all 0.3s ease;
+  }
+
+  label[for="audiofile"]:hover {
+    background: linear-gradient(145deg, #ff66ff, #ff3399);
+    box-shadow: 0 0 20px #ff33ff, inset 0 0 10px #ff66cc;
+  }
+
+  .slider-container {
+    margin: 35px 0;
+  }
+
+  .volume-label {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    text-shadow: 0 0 8px #0ff;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 18px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #0ff, #f0f);
+    outline: none;
+    box-shadow: 0 0 10px #0ff, 0 0 20px #f0f;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #ff0;
+    border: 2px solid #fff;
+    box-shadow: 0 0 15px #ff0, 0 0 30px #ff0;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #ff0;
+    border: 2px solid #fff;
+    box-shadow: 0 0 15px #ff0, 0 0 30px #ff0;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+
+  input[type="range"]::-moz-range-thumb:hover {
+    transform: scale(1.2);
+  }
+
+  button {
+    background: linear-gradient(145deg, #00ffff, #0066ff);
+    border: none;
+    border-radius: 15px;
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #000;
+    cursor: pointer;
+    text-shadow: 0 0 8px #fff;
+    box-shadow:
+      0 0 20px #0ff,
+      inset 0 0 10px #00aaff;
+    transition: all 0.3s ease;
+  }
+
+  button:hover {
+    background: linear-gradient(145deg, #33ffff, #3399ff);
+    box-shadow:
+      0 0 30px #0ff,
+      inset 0 0 12px #33ccff;
+    transform: translateY(-2px);
+  }
+
+  .loading {
+    margin-top: 20px;
+    font-size: 1rem;
+    color: #ff0;
+    text-shadow: 0 0 10px #ff0, 0 0 20px #f0f;
+    display: none;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Volume Adjuster</h1>
+    <form id="uploadForm" method="POST" enctype="multipart/form-data" action="/audio">
+      <label for="audiofile">🎵 Choose File</label>
+      <input type="file" id="audiofile" name="audiofile" accept="audio/*" required />
+
+      <div class="slider-container">
+        <div class="volume-label">Volume: <span id="volumeValue">100%</span></div>
+        <input type="range" id="volume" name="volume" min="0" max="400" value="100" />
+      </div>
+
+      <button type="submit">⚡ Process & Download</button>
+      <div class="loading" id="loadingText">Processing... Please wait.</div>
+    </form>
+  </div>
+
+<script>
+  const volumeSlider = document.getElementById('volume');
+  const volumeValue = document.getElementById('volumeValue');
+  const form = document.getElementById('uploadForm');
+  const loadingText = document.getElementById('loadingText');
+
+  volumeSlider.addEventListener('input', () => {
+    volumeValue.textContent = volumeSlider.value + '%';
+  });
+
+  form.addEventListener('submit', () => {
+    loadingText.style.display = 'block';
+  });
+</script>
+</body>
+</html>
