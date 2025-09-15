@@ -28,15 +28,11 @@ We applied the fundamentals of Git and GitHub for version control and teamwork w
 - Java
 - SQL
 
+## Walkthrough Video
+[Watch our project walkthrough](https://drive.google.com/file/d/10IhOMOkFVjiMvNIq-Ggb5d-QY5QchiAA/view?usp=drivesdk)
 
 ## How to Run
-1. do this steps in the terminal in order
-
-1)pip install ffmpeg-python
-2)pip show ffmpeg-python
-3)sudo apt-get update
-4)sudo apt-get install ffmpeg
-5)ffmpeg -version
-2. Clone this repository:
+1. Clone this repository:
    ```bash
    git clone https://github.com/nooribrahim06/imposters-web.git
+
